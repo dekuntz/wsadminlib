@@ -4346,20 +4346,19 @@ def getObjectByNodeServerAndName( nodename, servername, typename, objectname ):
     """Get the config object ID of an object based on its node, server, type, and name"""
     m = "getObjectByNodeServerAndName:"
     #sop(m,"Entry. nodename=%s servername=%s typename=%s objectname=%s" % ( repr(nodename), repr(servername), repr(typename), repr(objectname), ))
-    node_id = getNodeId(nodename)
-    #sop(m,"node_id=%s" % ( repr(node_id), ))
-    all = _splitlines(AdminConfig.list( typename, node_id ))
+    server_id = getServerId( nodename, servername )
+    #sop(m,"server_id=%s" % ( repr(server_id), ))
+    if server_id is None:
+        raise m + " Error: Could not find server. servername=%s nodename=%s" % (nodename,servername)
+    all = _splitlines(AdminConfig.list( typename, server_id ))
     result = None
     for obj in all:
         #sop(m,"obj=%s" % ( repr(obj), ))
         name = AdminConfig.showAttribute( obj, 'name' )
         if name == objectname:
-            #sop(m,"Found sought name=%s objectname=%s" % ( repr(name), repr(objectname), ))
-            if -1 != repr( obj ).find( 'servers/' + servername ):
-                #sop(m,"Found sought servername=%s" % ( repr(servername), ))
-                if result != None:
-                    raise "FOUND more than one %s with name %s" % ( typename, objectname )
-                result = obj
+            if result is not None:
+                raise m + " Error: Found more than one object. typename=%s objectname=%s" % ( typename, objectname )
+            result = obj
     #sop(m,"Exit. result=%s" % ( repr(result), ))
     return result
 
