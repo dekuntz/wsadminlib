@@ -4356,6 +4356,7 @@ def getObjectByNodeServerAndName( nodename, servername, typename, objectname ):
         #sop(m,"obj=%s" % ( repr(obj), ))
         name = AdminConfig.showAttribute( obj, 'name' )
         if name == objectname:
+            #sop(m,"Found sought name=%s objectname=%s" % ( repr(name), repr(objectname), ))
             if result is not None:
                 raise m + " Error: Found more than one object. typename=%s objectname=%s" % ( typename, objectname )
             result = obj
