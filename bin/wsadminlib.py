@@ -4348,15 +4348,19 @@ def getObjectByNodeServerAndName( nodename, servername, typename, objectname ):
     sop(m,"Entry. nodename=%s servername=%s typename=%s objectname=%s" % ( repr(nodename), repr(servername), repr(typename), repr(objectname), ))
     server_id = getServerByNodeAndName( nodename, servername )
     sop(m,"server_id=%s" % ( repr(server_id), ))
+    # Raise an exception if the server is not found
     if server_id is None:
         raise m + " Error: Could not find server. servername=%s nodename=%s" % (nodename,servername)
+    # Get a List of all config ids of type typename under the scope server_id
     all = getObjectsOfType(typename, server_id)
     result = None
+    # Iterate over the List, searching for a matching name
     for obj in all:
         sop(m,"obj=%s" % ( repr(obj), ))
         name = getObjectAttribute( obj, 'name' )
         if name == objectname:
             sop(m,"Found sought name=%s objectname=%s" % ( repr(name), repr(objectname), ))
+            # Raise an exception if more than one match is found
             if result is not None:
                 raise m + " Error: Found more than one object. typename=%s objectname=%s" % ( typename, objectname )
             result = obj
