@@ -866,15 +866,14 @@ def listServersOfType(typename):
     return result
 
 def getServerType(nodename,servername):
-    """Get the type of the given server.
-    E.g. 'APPLICATION_SERVER' or 'PROXY_SERVER'."""
-    node_id = getNodeId(nodename)
-    serverEntries = _splitlines(AdminConfig.list( 'ServerEntry', node_id ))
-    for serverEntry in serverEntries:
-        sName = AdminConfig.showAttribute( serverEntry, "serverName" )
-        if sName == servername:
-            return AdminConfig.showAttribute( serverEntry, "serverType" )
-    return None
+    """Get the type of the given server. E.g. 'APPLICATION_SERVER' or 'PROXY_SERVER'."""
+    m = "getServerType:"
+    sop(m,"Entry. nodename=%s servername=%s" % ( nodename, servername ))
+    server_id = getServerByNodeAndName( nodename, servername )
+    sop(m,"server_id=%s" % ( server_id, ))
+    servertype = getObjectAttribute(server_id, 'serverType')
+    sop(m,"Exit. servertype=%s" % ( servertype, ))
+    return servertype
 
 def listUnclusteredServers():
     """Return a list of app servers that don't belong to clusters, as a list of lists
@@ -4357,22 +4356,28 @@ def getServerId(nodename,servername):
 def getObjectByNodeServerAndName( nodename, servername, typename, objectname ):
     """Get the config object ID of an object based on its node, server, type, and name"""
     m = "getObjectByNodeServerAndName:"
-    #sop(m,"Entry. nodename=%s servername=%s typename=%s objectname=%s" % ( repr(nodename), repr(servername), repr(typename), repr(objectname), ))
-    node_id = getNodeId(nodename)
-    #sop(m,"node_id=%s" % ( repr(node_id), ))
-    all = _splitlines(AdminConfig.list( typename, node_id ))
+    sop(m,"Entry. nodename=%s servername=%s typename=%s objectname=%s" % ( repr(nodename), repr(servername), repr(typename), repr(objectname), ))
+    server_id = getServerByNodeAndName( nodename, servername )
+    sop(m,"server_id=%s" % ( repr(server_id), ))
+    # Raise an exception if the server is not found.
+    # This also avoids passing scope = None to getObjectsOfType() which inadvertently return all
+    # instaces of typename in the cell.
+    if server_id is None:
+        raise m + " Error: Could not find server. servername=%s nodename=%s" % (nodename,servername)
+    # Get a List of all config ids of type typename under the scope, server_id
+    all = getObjectsOfType(typename, scope = server_id)
     result = None
+    # Iterate over the List, searching for a matching name
     for obj in all:
-        #sop(m,"obj=%s" % ( repr(obj), ))
-        name = AdminConfig.showAttribute( obj, 'name' )
+        sop(m,"obj=%s" % ( repr(obj), ))
+        name = getObjectAttribute( obj, 'name' )
         if name == objectname:
-            #sop(m,"Found sought name=%s objectname=%s" % ( repr(name), repr(objectname), ))
-            if -1 != repr( obj ).find( 'servers/' + servername + '|' ):
-                #sop(m,"Found sought servername=%s" % ( repr(servername), ))
-                if result != None:
-                    raise "FOUND more than one %s with name %s" % ( typename, objectname )
-                result = obj
-    #sop(m,"Exit. result=%s" % ( repr(result), ))
+            sop(m,"Found sought name=%s objectname=%s" % ( repr(name), repr(objectname), ))
+            # Raise an exception if more than one match is found
+            if result is not None:
+                raise m + " Error: Found more than one object. typename=%s objectname=%s" % ( typename, objectname )
+            result = obj
+    sop(m,"Exit. result=%s" % ( repr(result), ))
     return result
 
 def getObjectByNodeAndName( nodename, typename, objectname ):
