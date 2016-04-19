@@ -275,15 +275,13 @@ def createServerInCluster( clustername, nodename, servername, sessionReplication
         sop(m,'Calling AdminTask.createClusterMember([-clusterName %s -memberConfig[-memberNode %s -memberName %s -memberWeight 2]])' % (clustername,nodename,servername))
         AdminTask.createClusterMember('[-clusterName %s -memberConfig[-memberNode %s -memberName %s -memberWeight 2]]' % (clustername,nodename,servername))
 
+# CUSTOM:
+# TODO: validate
 def deleteServerClusterByName( name ):
     """Delete the named server cluster"""
     m = "deleteServerClusterByName:"
-    sid = getServerClusterByName( name )
-    if not sid:
-        raise m + " Could not find cluster %s to delete" % name
-    stopCluster( name )
     sop(m,"remove cluster: %s" % name)
-    AdminConfig.remove( sid )
+    return AdminTask.deleteCluster(['-clusterName', name])
 
 def listServerClusters():
     """Return list of names of server clusters"""
@@ -306,6 +304,9 @@ def startAllServerClusters():
     for name in clusternames:
         startCluster( name )
 
+# CUSTOM:
+# TODO: validate
+# TDDO: return result of AdminTask.deleteCluster() as a List
 def deleteAllServerClusters():
     """Delete all server clusters (including their servers)"""
     m = "deleteAllServerClusters:"
@@ -313,8 +314,7 @@ def deleteAllServerClusters():
     clusternames = listServerClusters()
     for name in clusternames:
         sop(m,"Delete cluster: %s" % name)
-        id = getClusterId(name)
-        AdminConfig.remove( id )
+        AdminTask.deleteCluster(['-clusterName', name])
 
 def stopCluster( clustername ):
     """Stop the named server cluster"""
@@ -865,6 +865,7 @@ def listServersOfType(typename):
                 result.append([nodename, sName])
     return result
 
+# CUSTOM:
 def getServerType(nodename,servername):
     """Get the type of the given server. E.g. 'APPLICATION_SERVER' or 'PROXY_SERVER'."""
     m = "getServerType:"
@@ -4353,6 +4354,7 @@ def getServerId(nodename,servername):
     #TODO: This mirrors the functionality of getServerByNodeAndName(). However, getServerId() is used elsewhere in the library.
     return getServerByNodeAndName(nodename, servername)
 
+# CUSTOM:
 def getObjectByNodeServerAndName( nodename, servername, typename, objectname ):
     """Get the config object ID of an object based on its node, server, type, and name"""
     m = "getObjectByNodeServerAndName:"
