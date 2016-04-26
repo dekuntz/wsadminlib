@@ -866,6 +866,7 @@ def listServersOfType(typename):
     return result
 
 # CUSTOM:
+# Get serverType as a attribute of Server instead of getting it from server index
 def getServerType(nodename,servername):
     """Get the type of the given server. E.g. 'APPLICATION_SERVER' or 'PROXY_SERVER'."""
     m = "getServerType:"
