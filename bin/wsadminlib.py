@@ -4363,8 +4363,8 @@ def getObjectByNodeServerAndName( nodename, servername, typename, objectname ):
     server_id = getServerByNodeAndName( nodename, servername )
     sop(m,"server_id=%s" % ( repr(server_id), ))
     # Raise an exception if the server is not found.
-    # This also avoids passing scope = None to getObjectsOfType() which inadvertently return all
-    # instaces of typename in the cell.
+    # More importantly, this avoids passing scope = None to getObjectsOfType() which will then inadvertently return all
+    # instances of typename in the cell.
     if server_id is None:
         raise m + " Error: Could not find server. servername=%s nodename=%s" % (nodename,servername)
     # Get a List of all config ids of type typename under the scope, server_id
